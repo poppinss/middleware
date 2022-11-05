@@ -105,17 +105,17 @@ class Context {}
 const middleware = new Middleware<Context>()
 ```
 
-[gh-workflow-image]: https://img.shields.io/github/workflow/status/poppinss/co-compose/test?style=for-the-badge
-[gh-workflow-url]: https://github.com/poppinss/co-compose/actions/workflows/test.yml "Github action"
+[gh-workflow-image]: https://img.shields.io/github/workflow/status/poppinss/middleware/test?style=for-the-badge
+[gh-workflow-url]: https://github.com/poppinss/middleware/actions/workflows/test.yml "Github action"
 
 [typescript-image]: https://img.shields.io/badge/Typescript-294E80.svg?style=for-the-badge&logo=typescript
 [typescript-url]: "typescript"
 
-[npm-image]: https://img.shields.io/npm/v/co-compose.svg?style=for-the-badge&logo=npm
-[npm-url]: https://npmjs.org/package/co-compose 'npm'
+[npm-image]: https://img.shields.io/npm/v/middleware.svg?style=for-the-badge&logo=npm
+[npm-url]: https://npmjs.org/package/middleware 'npm'
 
-[license-image]: https://img.shields.io/npm/l/co-compose?color=blueviolet&style=for-the-badge
+[license-image]: https://img.shields.io/npm/l/middleware?color=blueviolet&style=for-the-badge
 [license-url]: LICENSE.md 'license'
 
-[synk-image]: https://img.shields.io/snyk/vulnerabilities/github/poppinss/co-compose?label=Synk%20Vulnerabilities&style=for-the-badge
-[synk-url]: https://snyk.io/test/github/poppinss/co-compose?targetFile=package.json 'synk'
+[synk-image]: https://img.shields.io/snyk/vulnerabilities/github/poppinss/middleware?label=Synk%20Vulnerabilities&style=for-the-badge
+[synk-url]: https://snyk.io/test/github/poppinss/middleware?targetFile=package.json 'synk'
