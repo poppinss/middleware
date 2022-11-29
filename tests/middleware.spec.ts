@@ -8,6 +8,7 @@
  */
 
 import { test } from '@japa/runner'
+import type { NextFn } from '../src/types.js'
 import { Middleware } from '../src/middleware.js'
 
 test.group('Middleware', () => {
@@ -180,6 +181,30 @@ test.group('Middleware', () => {
     })
 
     await middleware.runner().run({})
+    assert.deepEqual(chain, ['first', 'second', 'third'])
+  })
+
+  test('merge middleware with the runner', async ({ assert }) => {
+    const chain: string[] = []
+    const middleware = new Middleware<[any]>()
+
+    middleware.add((_, next) => {
+      chain.push('first')
+      return next()
+    })
+
+    const runTimeStack = [
+      (_: any, next: NextFn) => {
+        chain.push('second')
+        return next()
+      },
+      (_: any, next: NextFn) => {
+        chain.push('third')
+        return next()
+      },
+    ]
+
+    await middleware.runner(runTimeStack).run({})
     assert.deepEqual(chain, ['first', 'second', 'third'])
   })
 })

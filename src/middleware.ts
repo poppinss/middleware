@@ -8,7 +8,7 @@
  */
 
 import { Runner } from './runner.js'
-import { MiddlewareHandler, MiddlewareProviderHandler } from './types.js'
+import type { MiddlewareHandler, MiddlewareProviderHandler } from './types.js'
 
 /**
  * The middleware class implements the chain of responsibility design pattern
@@ -70,7 +70,9 @@ export class Middleware<Args extends any[]> {
   /**
    * Returns an instance of the runner to run hooks
    */
-  runner(): Runner<Args> {
-    return new Runner([...this.all()])
+  runner(
+    additionalMiddleware: (MiddlewareHandler<Args> | MiddlewareProviderHandler<Args>)[] = []
+  ): Runner<Args> {
+    return new Runner([...this.all(), ...additionalMiddleware])
   }
 }

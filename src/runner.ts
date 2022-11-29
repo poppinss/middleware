@@ -7,7 +7,7 @@
  * file that was distributed with this source code.
  */
 
-import { FinalHandler, MiddlewareHandler, MiddlewareProviderHandler } from './types.js'
+import type { FinalHandler, MiddlewareHandler, MiddlewareProviderHandler } from './types.js'
 
 /**
  * Run a function only once. Tightly coupled with the Runner class
