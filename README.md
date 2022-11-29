@@ -20,7 +20,9 @@ And import the `Middleware` class as follows.
 ```ts
 import Middleware from '@poppinss/middleware'
 
-const middleware = new Middleware()
+const context = {}
+
+const middleware = new Middleware<[typeof context]>()
 middleware.add((ctx, next) => {
   console.log('executing fn1')
   await next()
@@ -31,7 +33,6 @@ middleware.add((ctx, next) => {
   await next()
 })
 
-const context = {}
 await middleware.runner().run(context)
 ```
 
@@ -60,8 +61,8 @@ middleware.add({ name: 'authenticate', handle: authenticate })
 You can pass a context object to the `runner.run` method, which the runner will share with the middleware callbacks. For example:
 
 ```ts
-const middleware = new Middleware()
 const context = {}
+const middleware = new Middleware<[typeof context]>()
 
 middleware.add(function (ctx, next) {
   assert.deepEqual(ctx, context)
@@ -77,10 +78,10 @@ await runner.run(context)
 The final handler is executed when the entire middleware chain ends by calling `next`. This makes it easier to execute custom functions that are not part of the chain but must be executed when it ends.
 
 ```js
-const middleware = new Middleware()
 const context = {
   stack: [],
 }
+const middleware = new Middleware<[typeof context]>()
 
 middleware.add((ctx, next) => {
   ctx.stack.push('fn1')
@@ -102,7 +103,7 @@ You can specify the context type as a generic when creating the `Middleware` cla
 
 ```ts
 class Context {}
-const middleware = new Middleware<Context>()
+const middleware = new Middleware<[Context]>()
 ```
 
 [gh-workflow-image]: https://img.shields.io/github/workflow/status/poppinss/middleware/test?style=for-the-badge

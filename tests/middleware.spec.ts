@@ -152,7 +152,7 @@ test.group('Middleware', () => {
   })
 
   test('assert middleware handler types', () => {
-    const middleware = new Middleware<{ foo: string }>()
+    const middleware = new Middleware<[{ foo: string }]>()
 
     // @ts-expect-error
     middleware.add((_: string) => {})
@@ -162,7 +162,7 @@ test.group('Middleware', () => {
 
   test('execute middleware handlers', async ({ assert }) => {
     const chain: string[] = []
-    const middleware = new Middleware()
+    const middleware = new Middleware<[any]>()
 
     middleware.add((_, next) => {
       chain.push('first')

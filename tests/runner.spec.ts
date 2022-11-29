@@ -351,7 +351,7 @@ test.group('Runner', () => {
   test('define final handler to be executed after chain', async ({ assert }) => {
     const stack: any[] = []
 
-    const runner = new Runner([
+    const runner = new Runner<[any]>([
       function fn(ctx, next) {
         stack.push(ctx)
         return next()
@@ -371,7 +371,7 @@ test.group('Runner', () => {
   test('do not call final handler when next is not called', async ({ assert }) => {
     const stack: any[] = []
 
-    const runner = new Runner([
+    const runner = new Runner<[any]>([
       function fn(ctx) {
         stack.push(ctx)
       },
@@ -391,7 +391,7 @@ test.group('Runner', () => {
     assert.plan(2)
     const stack: any[] = []
 
-    const runner = new Runner([
+    const runner = new Runner<[any]>([
       function fn(ctx) {
         stack.push(ctx)
         throw new Error('Failed')

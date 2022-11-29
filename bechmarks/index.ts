@@ -9,7 +9,7 @@ const suite = new benchmark.Suite()
 /**
  * Poppinss middleware setup
  */
-const middleware = new Middleware()
+const middleware = new Middleware<[Record<string, string>]>()
 middleware.add(async function one(_, next) {
   await next()
 })

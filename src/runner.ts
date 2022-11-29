@@ -35,22 +35,21 @@ const DEFAULT_FINAL_HANDLER = () => Promise.resolve()
  * Runnable to execute an array of functions in sequence. The queue is
  * advanced only when the current function calls `next`.
  *
- * @example
  * ```js
  * const runner = new Runnable([async function fn1 (params, next) {
  * }])
  * ```
  */
-export class Runner<Context extends any> {
+export class Runner<Args extends any[]> {
   /**
    * An array of middleware to execute
    */
-  #middleware: (MiddlewareHandler<Context> | MiddlewareProviderHandler<Context>)[]
+  #middleware: (MiddlewareHandler<Args> | MiddlewareProviderHandler<Args>)[]
 
   /**
    * Context to share with the middleware and the final handler
    */
-  #context?: Context
+  #args!: Args
 
   /**
    * The active index for the middleware handler
@@ -60,9 +59,9 @@ export class Runner<Context extends any> {
   /**
    * Final handler to execute
    */
-  #finalHandler: FinalHandler<Context> = DEFAULT_FINAL_HANDLER
+  #finalHandler: FinalHandler<Args> = DEFAULT_FINAL_HANDLER
 
-  constructor(middleware: (MiddlewareHandler<Context> | MiddlewareProviderHandler<Context>)[]) {
+  constructor(middleware: (MiddlewareHandler<Args> | MiddlewareProviderHandler<Args>)[]) {
     this.#middleware = middleware
   }
 
@@ -73,33 +72,33 @@ export class Runner<Context extends any> {
    * If one method doesn't call `next`, then the chain will be finished
    * automatically.
    */
-  #invoke(self: Runner<Context>): Promise<void> | void {
+  #invoke(self: Runner<Args>): Promise<void> | void {
     const middleware = self.#middleware[self.#currentIndex++]
 
     /**
      * Empty stack
      */
     if (!middleware) {
-      return self.#finalHandler(self.#context!)
+      return self.#finalHandler(...self.#args)
     }
 
     /**
      * Call middleware from a function
      */
     if (typeof middleware === 'function') {
-      return middleware(self.#context!, once(self, self.#invoke))
+      return middleware(...self.#args, once(self, self.#invoke))
     }
 
     /**
      * Call middleware from an object
      */
-    return middleware.handle(self.#context!, once(self, self.#invoke))
+    return middleware.handle(...self.#args, once(self, self.#invoke))
   }
 
   /**
    * Final handler to be executed, when the chain ends successfully.
    */
-  finalHandler(finalHandler: FinalHandler<Context>): this {
+  finalHandler(finalHandler: FinalHandler<Args>): this {
     this.#finalHandler = finalHandler
     return this
   }
@@ -108,8 +107,8 @@ export class Runner<Context extends any> {
    * Start the middleware queue and pass params to it. The `params`
    * array will be passed as spread arguments.
    */
-  async run(context: Context): Promise<void> {
-    this.#context = context
+  async run(...args: Args): Promise<void> {
+    this.#args = args
     return this.#invoke(this)
   }
 }

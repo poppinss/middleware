@@ -14,8 +14,8 @@ import { MiddlewareHandler, MiddlewareProviderHandler } from './types.js'
  * The middleware class implements the chain of responsibility design pattern
  * and allows executing handlers in series.
  */
-export class Middleware<Context extends any> {
-  #middleware: Set<MiddlewareHandler<Context> | MiddlewareProviderHandler<Context>> = new Set()
+export class Middleware<Args extends any[]> {
+  #middleware: Set<MiddlewareHandler<Args> | MiddlewareProviderHandler<Args>> = new Set()
 
   /**
    * Get access to all the registered middleware. The return value is
@@ -29,7 +29,7 @@ export class Middleware<Context extends any> {
    * Find if a handler has been registered as a middleware
    * already.
    */
-  has(handler: MiddlewareHandler<Context> | MiddlewareProviderHandler<Context>): boolean {
+  has(handler: MiddlewareHandler<Args> | MiddlewareProviderHandler<Args>): boolean {
     return this.#middleware.has(handler)
   }
 
@@ -37,7 +37,7 @@ export class Middleware<Context extends any> {
    * Add a middleware. Adding the same middleware
    * twice will result in a noop.
    */
-  add(handler: MiddlewareHandler<Context> | MiddlewareProviderHandler<Context>): this {
+  add(handler: MiddlewareHandler<Args> | MiddlewareProviderHandler<Args>): this {
     this.#middleware.add(handler)
     return this
   }
@@ -45,7 +45,7 @@ export class Middleware<Context extends any> {
   /**
    * Remove a specific middleware
    */
-  remove(handler: MiddlewareHandler<Context> | MiddlewareProviderHandler<Context>): boolean {
+  remove(handler: MiddlewareHandler<Args> | MiddlewareProviderHandler<Args>): boolean {
     return this.#middleware.delete(handler)
   }
 
@@ -61,7 +61,7 @@ export class Middleware<Context extends any> {
    * instance. The merged middleware are
    * appended
    */
-  merge(hooks: Middleware<Context>) {
+  merge(hooks: Middleware<Args>) {
     hooks.all().forEach((handler) => {
       this.add(handler)
     })
@@ -70,7 +70,7 @@ export class Middleware<Context extends any> {
   /**
    * Returns an instance of the runner to run hooks
    */
-  runner(): Runner<Context> {
+  runner(): Runner<Args> {
     return new Runner([...this.all()])
   }
 }
