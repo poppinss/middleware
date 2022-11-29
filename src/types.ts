@@ -20,7 +20,6 @@ export type MiddlewareHandler<Args extends any[]> = (
  * Type of the object based middleware handler
  */
 export type MiddlewareProviderHandler<Args extends any[]> = {
-  name: string
   handle(...args: [...Args, NextFn]): Promise<void> | void
 }
 

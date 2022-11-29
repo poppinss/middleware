@@ -111,20 +111,17 @@ test.group('Runner', () => {
     class Foo {}
     const runner = new Runner([
       {
-        name: 'first',
         handle: (context, next) => {
           return first(context, next)
         },
       },
       {
-        name: 'second',
         handle: (context, next) => {
           const foo = new Foo()
           return second.bind(foo)(context, next)
         },
       },
       {
-        name: 'third',
         handle: (context, next) => {
           return third(context, next)
         },
