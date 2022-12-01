@@ -5,6 +5,8 @@
 
 This package is a zero-dependency implementation for the chain of responsibility design pattern, also known as the middleware pipeline.
 
+![](./middleware_benchmarks.png)
+
 ## Setup
 Install the package from the npm packages registry.
 

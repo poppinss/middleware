@@ -3,13 +3,15 @@ import benchmark from 'benchmark'
 // @ts-expect-error
 import Fastseries from 'fastseries'
 
+import type { NextFn } from '../src/types.js'
 import { Middleware } from '../src/middleware.js'
+
 const suite = new benchmark.Suite()
 
 /**
  * Poppinss middleware setup
  */
-const middleware = new Middleware<[Record<string, string>]>()
+const middleware = new Middleware<(ctx: any, next: NextFn) => void>()
 middleware.add(async function one(_, next) {
   await next()
 })
@@ -48,7 +50,7 @@ suite
     fn(deferred: any) {
       middleware
         .runner()
-        .run({})
+        .run((fn, next) => fn({}, next))
         .then(() => deferred.resolve())
     },
   })
