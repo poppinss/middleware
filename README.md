@@ -19,10 +19,14 @@ And import the `Middleware` class as follows.
 
 ```ts
 import Middleware from '@poppinss/middleware'
+import { NextFn } from '@poppinss/middleware/types'
 
 const context = {}
 
-const middleware = new Middleware<[typeof context]>()
+type MiddlewareFn = (ctx: typeof context, next: NextFn)
+
+const middleware = new Middleware<MiddlewareFn>()
+
 middleware.add((ctx, next) => {
   console.log('executing fn1')
   await next()
@@ -33,13 +37,16 @@ middleware.add((ctx, next) => {
   await next()
 })
 
-await middleware.runner().run(context)
+await middleware
+  .runner()
+  .run((fn, next) => fn(context, next))
 ```
 
 ## Defining middleware
 
-The middleware handlers are defined using the `middleware.add` method. The method accepts a callback function to execute.
+The middleware handlers are defined using the `middleware.add` method. The middleware function can be represented as any value you wish. For example:
 
+**The middleware can be a function**
 ```ts
 const middleware = new Middleware()
 
@@ -48,8 +55,7 @@ middleware.add(function () {
 })
 ```
 
-You can also define middleware as an object with the `name` and the `handle` method property.
-
+**Or it can be an object with `handle` method**
 ```ts
 const middleware = new Middleware()
 function authenticate() {}
@@ -57,12 +63,14 @@ function authenticate() {}
 middleware.add({ name: 'authenticate', handle: authenticate })
 ```
 
-### Passing context to middleware
-You can pass a context object to the `runner.run` method, which the runner will share with the middleware callbacks. For example:
+### Passing data to middleware
+Since, you are in control of executing the underlying middleware function. You can pass any data you want to the middleware.
 
 ```ts
 const context = {}
-const middleware = new Middleware<[typeof context]>()
+
+type MiddlewareFn = (ctx: typeof context, next: NextFn)
+const middleware = new Middleware<MiddlewareFn>()
 
 middleware.add(function (ctx, next) {
   assert.deepEqual(ctx, context)
@@ -70,7 +78,7 @@ middleware.add(function (ctx, next) {
 })
 
 const runner = middleware.runner()
-await runner.run(context)
+await runner.run((fn, next) => fn(context, next))
 ```
 
 
@@ -81,9 +89,9 @@ The final handler is executed when the entire middleware chain ends by calling `
 const context = {
   stack: [],
 }
-const middleware = new Middleware<[typeof context]>()
+const middleware = new Middleware()
 
-middleware.add((ctx, next) => {
+middleware.add((ctx: typeof context, next: NextFn) => {
   ctx.stack.push('fn1')
   await next()
 })
@@ -91,19 +99,11 @@ middleware.add((ctx, next) => {
 await middleware
   .runner()
   .finalHandler(() => {
-    ctx.stack.push('final handler')
+    context.stack.push('final handler')
   })
-  .run(ctx)
+  .run((fn, next) => fn(context, next))
 
-assert.deepEqual(ctx.stack, ['fn1', 'final handler'])
-```
-
-## Context type
-You can specify the context type as a generic when creating the `Middleware` class instance.
-
-```ts
-class Context {}
-const middleware = new Middleware<[Context]>()
+assert.deepEqual(context.stack, ['fn1', 'final handler'])
 ```
 
 [gh-workflow-image]: https://img.shields.io/github/workflow/status/poppinss/middleware/test?style=for-the-badge

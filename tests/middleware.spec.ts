@@ -152,18 +152,9 @@ test.group('Middleware', () => {
     assert.deepEqual(middleware1.all(), new Set([handler, handler1]))
   })
 
-  test('assert middleware handler types', () => {
-    const middleware = new Middleware<[{ foo: string }]>()
-
-    // @ts-expect-error
-    middleware.add((_: string) => {})
-
-    middleware.add((_: { foo: string }) => {})
-  })
-
   test('execute middleware handlers', async ({ assert }) => {
     const chain: string[] = []
-    const middleware = new Middleware<[any]>()
+    const middleware = new Middleware<(_: any, next: NextFn) => any>()
 
     middleware.add((_, next) => {
       chain.push('first')
@@ -180,31 +171,33 @@ test.group('Middleware', () => {
       return next()
     })
 
-    await middleware.runner().run({})
+    await middleware.runner().run((fn, next) => fn({}, next))
     assert.deepEqual(chain, ['first', 'second', 'third'])
   })
 
-  test('merge middleware with the runner', async ({ assert }) => {
-    const chain: string[] = []
-    const middleware = new Middleware<[any]>()
+  test('freeze middleware stack', ({ assert }) => {
+    const middleware = new Middleware()
 
-    middleware.add((_, next) => {
-      chain.push('first')
-      return next()
-    })
+    function handler() {}
+    middleware.add(handler)
 
-    const runTimeStack = [
-      (_: any, next: NextFn) => {
-        chain.push('second')
-        return next()
-      },
-      (_: any, next: NextFn) => {
-        chain.push('third')
-        return next()
-      },
-    ]
+    middleware.freeze()
 
-    await middleware.runner(runTimeStack).run({})
-    assert.deepEqual(chain, ['first', 'second', 'third'])
+    assert.throws(
+      () => middleware.add(handler),
+      'Middleware stack is frozen. Cannot add new middleware'
+    )
+    assert.throws(
+      () => middleware.remove(handler),
+      'Middleware stack is frozen. Cannot remove middleware'
+    )
+    assert.throws(() => middleware.clear(), 'Middleware stack is frozen. Cannot clear middleware')
+    assert.throws(
+      () => middleware.merge(new Middleware()),
+      'Middleware stack is frozen. Cannot merge middleware'
+    )
+
+    assert.deepEqual(middleware.all(), new Set([handler]))
+    assert.isTrue(middleware.has(handler))
   })
 })

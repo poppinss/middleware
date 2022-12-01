@@ -8,14 +8,15 @@
  */
 
 import { Runner } from './runner.js'
-import type { MiddlewareHandler, MiddlewareProviderHandler } from './types.js'
 
 /**
  * The middleware class implements the chain of responsibility design pattern
  * and allows executing handlers in series.
  */
-export class Middleware<Args extends any[]> {
-  #middleware: Set<MiddlewareHandler<Args> | MiddlewareProviderHandler<Args>> = new Set()
+export class Middleware<MiddlewareFn extends any> {
+  #middleware: Set<MiddlewareFn> = new Set()
+  #middlewareArray?: MiddlewareFn[]
+  #isFrozen: boolean = false
 
   /**
    * Get access to all the registered middleware. The return value is
@@ -29,7 +30,7 @@ export class Middleware<Args extends any[]> {
    * Find if a handler has been registered as a middleware
    * already.
    */
-  has(handler: MiddlewareHandler<Args> | MiddlewareProviderHandler<Args>): boolean {
+  has(handler: MiddlewareFn): boolean {
     return this.#middleware.has(handler)
   }
 
@@ -37,7 +38,11 @@ export class Middleware<Args extends any[]> {
    * Add a middleware. Adding the same middleware
    * twice will result in a noop.
    */
-  add(handler: MiddlewareHandler<Args> | MiddlewareProviderHandler<Args>): this {
+  add(handler: MiddlewareFn): this {
+    if (this.#isFrozen) {
+      throw new Error('Middleware stack is frozen. Cannot add new middleware')
+    }
+
     this.#middleware.add(handler)
     return this
   }
@@ -45,7 +50,11 @@ export class Middleware<Args extends any[]> {
   /**
    * Remove a specific middleware
    */
-  remove(handler: MiddlewareHandler<Args> | MiddlewareProviderHandler<Args>): boolean {
+  remove(handler: MiddlewareFn): boolean {
+    if (this.#isFrozen) {
+      throw new Error('Middleware stack is frozen. Cannot remove middleware')
+    }
+
     return this.#middleware.delete(handler)
   }
 
@@ -53,6 +62,10 @@ export class Middleware<Args extends any[]> {
    * Remove all middleware
    */
   clear(): void {
+    if (this.#isFrozen) {
+      throw new Error('Middleware stack is frozen. Cannot clear middleware')
+    }
+
     this.#middleware.clear()
   }
 
@@ -61,18 +74,33 @@ export class Middleware<Args extends any[]> {
    * instance. The merged middleware are
    * appended
    */
-  merge(hooks: Middleware<Args>) {
+  merge(hooks: Middleware<MiddlewareFn>) {
+    if (this.#isFrozen) {
+      throw new Error('Middleware stack is frozen. Cannot merge middleware')
+    }
+
     hooks.all().forEach((handler) => {
       this.add(handler)
     })
   }
 
   /**
+   * Freezes the middleware stack for further modifications
+   */
+  freeze() {
+    if (this.#isFrozen) {
+      return
+    }
+
+    this.#isFrozen = true
+    this.#middlewareArray = [...this.all()]
+  }
+
+  /**
    * Returns an instance of the runner to run hooks
    */
-  runner(
-    additionalMiddleware: (MiddlewareHandler<Args> | MiddlewareProviderHandler<Args>)[] = []
-  ): Runner<Args> {
-    return new Runner([...this.all(), ...additionalMiddleware])
+  runner(): Runner<MiddlewareFn> {
+    this.freeze()
+    return new Runner(this.#middlewareArray!)
   }
 }

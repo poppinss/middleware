@@ -7,7 +7,7 @@
  * file that was distributed with this source code.
  */
 
-import type { FinalHandler, MiddlewareHandler, MiddlewareProviderHandler } from './types.js'
+import type { Executor, FinalHandler } from './types.js'
 
 /**
  * Run a function only once. Tightly coupled with the Runner class
@@ -40,16 +40,11 @@ const DEFAULT_FINAL_HANDLER = () => Promise.resolve()
  * }])
  * ```
  */
-export class Runner<Args extends any[]> {
+export class Runner<MiddlewareFn extends any> {
   /**
    * An array of middleware to execute
    */
-  #middleware: (MiddlewareHandler<Args> | MiddlewareProviderHandler<Args>)[]
-
-  /**
-   * Context to share with the middleware and the final handler
-   */
-  #args!: Args
+  #middleware: MiddlewareFn[]
 
   /**
    * The active index for the middleware handler
@@ -57,11 +52,16 @@ export class Runner<Args extends any[]> {
   #currentIndex = 0
 
   /**
+   * Executor is responsible for executing a middleware
+   */
+  #executor!: Executor<MiddlewareFn>
+
+  /**
    * Final handler to execute
    */
-  #finalHandler: FinalHandler<Args> = DEFAULT_FINAL_HANDLER
+  #finalHandler: FinalHandler = DEFAULT_FINAL_HANDLER
 
-  constructor(middleware: (MiddlewareHandler<Args> | MiddlewareProviderHandler<Args>)[]) {
+  constructor(middleware: MiddlewareFn[]) {
     this.#middleware = middleware
   }
 
@@ -72,33 +72,23 @@ export class Runner<Args extends any[]> {
    * If one method doesn't call `next`, then the chain will be finished
    * automatically.
    */
-  #invoke(self: Runner<Args>): Promise<void> | void {
+  #invoke(self: Runner<MiddlewareFn>): Promise<void> | void {
     const middleware = self.#middleware[self.#currentIndex++]
 
     /**
      * Empty stack
      */
     if (!middleware) {
-      return self.#finalHandler(...self.#args)
+      return self.#finalHandler()
     }
 
-    /**
-     * Call middleware from a function
-     */
-    if (typeof middleware === 'function') {
-      return middleware(...self.#args, once(self, self.#invoke))
-    }
-
-    /**
-     * Call middleware from an object
-     */
-    return middleware.handle(...self.#args, once(self, self.#invoke))
+    return self.#executor(middleware, once(self, self.#invoke))
   }
 
   /**
    * Final handler to be executed, when the chain ends successfully.
    */
-  finalHandler(finalHandler: FinalHandler<Args>): this {
+  finalHandler(finalHandler: FinalHandler): this {
     this.#finalHandler = finalHandler
     return this
   }
@@ -107,8 +97,8 @@ export class Runner<Args extends any[]> {
    * Start the middleware queue and pass params to it. The `params`
    * array will be passed as spread arguments.
    */
-  async run(...args: Args): Promise<void> {
-    this.#args = args
+  async run(cb: Executor<MiddlewareFn>): Promise<void> {
+    this.#executor = cb
     return this.#invoke(this)
   }
 }

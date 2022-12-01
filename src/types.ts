@@ -10,21 +10,12 @@
 export type NextFn = () => Promise<void> | void
 
 /**
- * Type for the middleware inline closure
- */
-export type MiddlewareHandler<Args extends any[]> = (
-  ...args: [...Args, NextFn]
-) => Promise<void> | void
-
-/**
- * Type of the object based middleware handler
- */
-export type MiddlewareProviderHandler<Args extends any[]> = {
-  handle(...args: [...Args, NextFn]): Promise<void> | void
-}
-
-/**
  * Final handler is called when the entire chain has been
  * executed successfully.
  */
-export type FinalHandler<Args extends any[]> = (...args: Args) => Promise<void> | void
+export type FinalHandler = () => Promise<void> | void
+
+/**
+ * The executor function that invokes the middleware
+ */
+export type Executor<MiddlewareFn extends any> = (middleware: MiddlewareFn, next: NextFn) => any

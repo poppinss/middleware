@@ -8,8 +8,9 @@
  */
 
 import { test } from '@japa/runner'
-import { NextFn } from '../src/types.js'
+
 import { Runner } from '../src/runner.js'
+import type { NextFn } from '../src/types.js'
 
 function sleep(timeout: number) {
   return new Promise<void>((resolve) => {
@@ -38,7 +39,7 @@ test.group('Runner', () => {
 
     const runner = new Runner([first, second, third])
 
-    await runner.run({})
+    await runner.run((fn, next) => fn({}, next))
     assert.deepEqual(chain, ['first', 'second', 'third'])
   })
 
@@ -63,7 +64,7 @@ test.group('Runner', () => {
 
     const runner = new Runner([first, second, third])
 
-    await runner.run([])
+    await runner.run((fn, next) => fn({}, next))
     assert.deepEqual(chain, ['first', 'second', 'third'])
   })
 
@@ -86,7 +87,7 @@ test.group('Runner', () => {
 
     const runner = new Runner([first, second, third])
 
-    await assert.rejects(() => runner.run({}), 'I am killed')
+    await assert.rejects(() => runner.run((fn, next) => fn({}, next)), 'I am killed')
     assert.deepEqual(chain, ['first'])
   })
 
@@ -109,7 +110,7 @@ test.group('Runner', () => {
     }
 
     class Foo {}
-    const runner = new Runner([
+    const runner = new Runner<{ handle(ctx: any, next: NextFn): void }>([
       {
         handle: (context, next) => {
           return first(context, next)
@@ -128,7 +129,7 @@ test.group('Runner', () => {
       },
     ])
 
-    await runner.run({})
+    await runner.run((fn, next) => fn.handle({}, next))
     assert.equal(chain[0], null)
     assert.instanceOf(chain[1], Foo)
     assert.equal(chain[0], null)
@@ -157,7 +158,7 @@ test.group('Runner', () => {
     }
 
     const runner = new Runner([first, second, third])
-    await runner.run(request)
+    await runner.run((fn, next) => fn(request, next))
     assert.deepEqual(request, { first: true, second: true, third: true })
   })
 
@@ -186,7 +187,7 @@ test.group('Runner', () => {
 
     const runner = new Runner([first, second, third, fourth])
 
-    await runner.run({})
+    await runner.run((fn, next) => fn({}, next))
     assert.deepEqual(chain, ['first', 'second', 'third'])
   })
 
@@ -213,7 +214,10 @@ test.group('Runner', () => {
     const request = { count: 0 }
     const otherRequest = { count: 0 }
 
-    await Promise.all([runner.run(request), runner2.run(otherRequest)])
+    await Promise.all([
+      await runner.run((fn, next) => fn(request, next)),
+      await runner2.run((fn, next) => fn(otherRequest, next)),
+    ])
 
     assert.equal(request.count, 3)
     assert.equal(otherRequest.count, 3)
@@ -229,7 +233,7 @@ test.group('Runner', () => {
 
     const runner = new Runner([first])
 
-    await runner.run([])
+    await runner.run((fn) => fn())
     assert.deepEqual(chain, ['first'])
   })
 
@@ -257,7 +261,7 @@ test.group('Runner', () => {
 
     const runner = new Runner([first, second, third])
 
-    await runner.run([])
+    await runner.run((fn, next) => fn({}, next))
     assert.deepEqual(chain, [
       'first',
       'second',
@@ -294,7 +298,7 @@ test.group('Runner', () => {
 
     const runner = new Runner([first, second, third])
 
-    await runner.run([])
+    await runner.run((fn, next) => fn({}, next))
     assert.deepEqual(chain, [
       'first',
       'second',
@@ -331,7 +335,7 @@ test.group('Runner', () => {
 
     const runner = new Runner([first, second, third])
 
-    await assert.rejects(() => runner.run({}), 'Something went wrong')
+    await assert.rejects(() => runner.run((fn, next) => fn({}, next)), 'Something went wrong')
     assert.deepEqual(chain, ['first', 'second', 'first after'])
   })
 
@@ -342,13 +346,13 @@ test.group('Runner', () => {
       },
     ])
 
-    await assert.rejects(() => runner.run({}), 'Something went wrong')
+    await assert.rejects(() => runner.run((fn) => fn()), 'Something went wrong')
   })
 
   test('define final handler to be executed after chain', async ({ assert }) => {
     const stack: any[] = []
 
-    const runner = new Runner<[any]>([
+    const runner = new Runner<(_: any, next: NextFn) => void>([
       function fn(ctx, next) {
         stack.push(ctx)
         return next()
@@ -359,8 +363,8 @@ test.group('Runner', () => {
       stack.push(ctx)
     }
 
-    runner.finalHandler(finalHandler)
-    await runner.run('foo')
+    runner.finalHandler(() => finalHandler('foo'))
+    await runner.run((fn, next) => fn('foo', next))
 
     assert.deepEqual(stack, ['foo', 'foo'])
   })
@@ -368,7 +372,7 @@ test.group('Runner', () => {
   test('do not call final handler when next is not called', async ({ assert }) => {
     const stack: any[] = []
 
-    const runner = new Runner<[any]>([
+    const runner = new Runner<(_: any, next: NextFn) => void>([
       function fn(ctx) {
         stack.push(ctx)
       },
@@ -378,8 +382,8 @@ test.group('Runner', () => {
       stack.push(ctx)
     }
 
-    runner.finalHandler(finalHandler)
-    await runner.run('bar')
+    runner.finalHandler(() => finalHandler('bar'))
+    await runner.run((fn, next) => fn('bar', next))
 
     assert.deepEqual(stack, ['bar'])
   })
@@ -388,7 +392,7 @@ test.group('Runner', () => {
     assert.plan(2)
     const stack: any[] = []
 
-    const runner = new Runner<[any]>([
+    const runner = new Runner<(_: any, next: NextFn) => void>([
       function fn(ctx) {
         stack.push(ctx)
         throw new Error('Failed')
@@ -399,8 +403,9 @@ test.group('Runner', () => {
       stack.push(ctx)
     }
 
-    runner.finalHandler(finalHandler)
-    await assert.rejects(() => runner.run('bar'), 'Failed')
+    runner.finalHandler(() => finalHandler('bar'))
+
+    await assert.rejects(() => runner.run((fn, next) => fn('bar', next)), 'Failed')
     assert.deepEqual(stack, ['bar'])
   })
 })
