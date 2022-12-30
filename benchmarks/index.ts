@@ -50,7 +50,7 @@ suite
     fn(deferred: any) {
       middleware
         .runner()
-        .run((fn, next) => fn({}, next))
+        .run(async (fn, next) => fn({}, next))
         .then(() => deferred.resolve())
     },
   })
