@@ -7,15 +7,24 @@
  * file that was distributed with this source code.
  */
 
-export type NextFn = () => Promise<void> | void
+export type NextFn = () => Promise<any> | any
 
 /**
  * Final handler is called when the entire chain has been
  * executed successfully.
  */
-export type FinalHandler = () => Promise<void> | void
+export type FinalHandler = () => Promise<any>
+
+/**
+ * Error handler is called any method in the pipeline raises
+ * an exception
+ */
+export type ErrorHandler = (error: any) => Promise<any>
 
 /**
  * The executor function that invokes the middleware
  */
-export type Executor<MiddlewareFn extends any> = (middleware: MiddlewareFn, next: NextFn) => any
+export type Executor<MiddlewareFn extends any> = (
+  middleware: MiddlewareFn,
+  next: NextFn
+) => Promise<any>

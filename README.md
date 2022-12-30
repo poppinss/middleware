@@ -108,6 +108,52 @@ await middleware
 assert.deepEqual(context.stack, ['fn1', 'final handler'])
 ```
 
+### Error handler
+By default, the exceptions raised in the middleware pipeline are bubbled upto the `run` method and you can capture them using `try/catch` block. Also, when an exception is raised, the middleware downstream logic will not run, unless middleware internally wraps the `next` method call inside `try/catch` block.
+
+To simply the exception handling process, you can define a custom error handler to catch the exceptions and resume the downstream flow of middleware.
+
+```ts
+const context = {
+  stack: [],
+}
+const middleware = new Middleware()
+
+middleware.add((ctx: typeof context, next: NextFn) => {
+  ctx.stack.push('middleware 1 upstream')
+  await next()
+  ctx.stack.push('middleware 1 downstream')
+})
+
+middleware.add((ctx: typeof context, next: NextFn) => {
+  ctx.stack.push('middleware 2 upstream')
+  throw new Error('Something went wrong')
+})
+
+middleware.add((ctx: typeof context, next: NextFn) => {
+  ctx.stack.push('middleware 3 upstream')
+  await next()
+  ctx.stack.push('middleware 3 downstream')
+})
+
+await middleware
+  .runner()
+  .errorHandler((error) => {
+    console.log(error)
+    context.stack.push('error handler')
+  })
+  .finalHandler(() => {
+    context.stack.push('final handler')
+  })
+  .run((fn, next) => fn(context, next))
+
+assert.deepEqual(context.stack, [
+  'middleware 1 upstream',
+  'middleware 2 upstream',
+  'middleware 1 downstream'
+])
+```
+
 [gh-workflow-image]: https://img.shields.io/github/workflow/status/poppinss/middleware/test?style=for-the-badge
 [gh-workflow-url]: https://github.com/poppinss/middleware/actions/workflows/test.yml "Github action"
 

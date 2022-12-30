@@ -129,7 +129,7 @@ test.group('Runner', () => {
       },
     ])
 
-    await runner.run((fn, next) => fn.handle({}, next))
+    await runner.run(async (fn, next) => fn.handle({}, next))
     assert.equal(chain[0], null)
     assert.instanceOf(chain[1], Foo)
     assert.equal(chain[0], null)
@@ -233,7 +233,7 @@ test.group('Runner', () => {
 
     const runner = new Runner([first])
 
-    await runner.run((fn) => fn())
+    await runner.run(async (fn) => fn())
     assert.deepEqual(chain, ['first'])
   })
 
@@ -364,7 +364,7 @@ test.group('Runner', () => {
     }
 
     runner.finalHandler(() => finalHandler('foo'))
-    await runner.run((fn, next) => fn('foo', next))
+    await runner.run(async (fn, next) => fn('foo', next))
 
     assert.deepEqual(stack, ['foo', 'foo'])
   })
@@ -383,7 +383,7 @@ test.group('Runner', () => {
     }
 
     runner.finalHandler(() => finalHandler('bar'))
-    await runner.run((fn, next) => fn('bar', next))
+    await runner.run(async (fn, next) => fn('bar', next))
 
     assert.deepEqual(stack, ['bar'])
   })
@@ -405,7 +405,145 @@ test.group('Runner', () => {
 
     runner.finalHandler(() => finalHandler('bar'))
 
-    await assert.rejects(() => runner.run((fn, next) => fn('bar', next)), 'Failed')
+    await assert.rejects(() => runner.run(async (fn, next) => fn('bar', next)), 'Failed')
     assert.deepEqual(stack, ['bar'])
+  })
+
+  test('hand over exception a custom exception handler', async ({ assert }) => {
+    assert.plan(2)
+    const chain: string[] = []
+
+    async function first(_: any, next: NextFn) {
+      chain.push('first')
+      await next()
+    }
+
+    async function second() {
+      throw new Error('I am killed')
+    }
+
+    async function third(_: any, next: NextFn) {
+      chain.push('third')
+      await next()
+    }
+
+    const runner = new Runner([first, second, third])
+    runner.errorHandler(async (error) => {
+      assert.equal(error.message, 'I am killed')
+    })
+
+    await runner.run((fn, next) => fn({}, next))
+    assert.deepEqual(chain, ['first'])
+  })
+
+  test('execute middleware in reverse when error handler is defined', async ({ assert }) => {
+    const chain: string[] = []
+
+    async function first(_: any, next: NextFn) {
+      chain.push('first')
+      await next()
+      chain.push('first after')
+    }
+
+    async function second(_: any, next: NextFn) {
+      chain.push('second')
+      await sleep(200)
+      await next()
+      await sleep(100)
+      chain.push('second after')
+    }
+
+    async function third() {
+      throw new Error('Something went wrong')
+    }
+
+    const runner = new Runner([first, second, third])
+    runner.errorHandler(async () => {})
+
+    await runner.run((fn, next) => fn({}, next))
+    assert.deepEqual(chain, ['first', 'second', 'second after', 'first after'])
+  })
+
+  test('return error handler response via next method', async ({ assert }) => {
+    const chain: string[] = []
+
+    async function first(_: any, next: NextFn) {
+      chain.push('first')
+      const response = await next()
+      chain.push('first after')
+
+      return response
+    }
+
+    async function second(_: any, next: NextFn) {
+      chain.push('second')
+      await sleep(200)
+      const response = await next()
+      await sleep(100)
+      chain.push('second after')
+
+      return response
+    }
+
+    async function third() {
+      throw new Error('Something went wrong')
+    }
+
+    async function fourth() {
+      chain.push('fourth')
+    }
+
+    const runner = new Runner([first, second, third, fourth])
+    runner.errorHandler(async () => {
+      return 'handled'
+    })
+    runner.finalHandler(async () => {
+      chain.push('final handler')
+    })
+
+    const response = await runner.run((fn, next) => fn({}, next))
+    assert.equal(response, 'handled')
+    assert.deepEqual(chain, ['first', 'second', 'second after', 'first after'])
+  })
+
+  test('raise exception thrown by error handler', async ({ assert }) => {
+    const chain: string[] = []
+
+    async function first(_: any, next: NextFn) {
+      chain.push('first')
+      const response = await next()
+      chain.push('first after')
+
+      return response
+    }
+
+    async function second(_: any, next: NextFn) {
+      chain.push('second')
+      await sleep(200)
+      const response = await next()
+      await sleep(100)
+      chain.push('second after')
+
+      return response
+    }
+
+    async function third() {
+      throw new Error('Something went wrong')
+    }
+
+    async function fourth() {
+      chain.push('fourth')
+    }
+
+    const runner = new Runner([first, second, third, fourth])
+    runner.errorHandler(async (error) => {
+      throw error
+    })
+    runner.finalHandler(async () => {
+      chain.push('final handler')
+    })
+
+    await assert.rejects(() => runner.run((fn, next) => fn({}, next)), 'Something went wrong')
+    assert.deepEqual(chain, ['first', 'second'])
   })
 })

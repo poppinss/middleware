@@ -7,7 +7,7 @@
  * file that was distributed with this source code.
  */
 
-import type { Executor, FinalHandler } from './types.js'
+import type { ErrorHandler, Executor, FinalHandler } from './types.js'
 
 /**
  * Run a function only once. Tightly coupled with the Runner class
@@ -61,6 +61,11 @@ export class Runner<MiddlewareFn extends any> {
    */
   #finalHandler: FinalHandler = DEFAULT_FINAL_HANDLER
 
+  /**
+   * Error handler to self handle errors
+   */
+  #errorHandler?: ErrorHandler
+
   constructor(middleware: MiddlewareFn[]) {
     this.#middleware = middleware
   }
@@ -86,10 +91,38 @@ export class Runner<MiddlewareFn extends any> {
   }
 
   /**
+   * Same as invoke, but captures errors
+   */
+  #invokeWithErrorManagement(self: Runner<MiddlewareFn>): Promise<void> | void {
+    const middleware = self.#middleware[self.#currentIndex++]
+
+    /**
+     * Empty stack
+     */
+    if (!middleware) {
+      return self.#finalHandler().catch(self.#errorHandler)
+    }
+
+    return self
+      .#executor(middleware, once(self, self.#invokeWithErrorManagement))
+      .catch(self.#errorHandler)
+  }
+
+  /**
    * Final handler to be executed, when the chain ends successfully.
    */
   finalHandler(finalHandler: FinalHandler): this {
     this.#finalHandler = finalHandler
+    return this
+  }
+
+  /**
+   * Specify a custom error handler to use. Defining an error handler
+   * turns will make run method not throw an exception and instead
+   * run the upstream middleware logic
+   */
+  errorHandler(errorHandler: ErrorHandler): this {
+    this.#errorHandler = errorHandler
     return this
   }
 
@@ -99,6 +132,11 @@ export class Runner<MiddlewareFn extends any> {
    */
   async run(cb: Executor<MiddlewareFn>): Promise<void> {
     this.#executor = cb
+
+    if (this.#errorHandler) {
+      return this.#invokeWithErrorManagement(this)
+    }
+
     return this.#invoke(this)
   }
 }
