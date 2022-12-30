@@ -91,7 +91,9 @@ The final handler is executed when the entire middleware chain ends by calling `
 const context = {
   stack: [],
 }
-const middleware = new Middleware()
+
+type MiddlewareFn = (ctx: typeof context, next: NextFn)
+const middleware = new Middleware<MiddlewareFn>()
 
 middleware.add((ctx: typeof context, next: NextFn) => {
   ctx.stack.push('fn1')
@@ -117,7 +119,9 @@ To simply the exception handling process, you can define a custom error handler 
 const context = {
   stack: [],
 }
-const middleware = new Middleware()
+
+type MiddlewareFn = (ctx: typeof context, next: NextFn)
+const middleware = new Middleware<MiddlewareFn>()
 
 middleware.add((ctx: typeof context, next: NextFn) => {
   ctx.stack.push('middleware 1 upstream')
@@ -150,6 +154,7 @@ await middleware
 assert.deepEqual(context.stack, [
   'middleware 1 upstream',
   'middleware 2 upstream',
+  'error handler',
   'middleware 1 downstream'
 ])
 ```
