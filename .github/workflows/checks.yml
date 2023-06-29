@@ -5,10 +5,10 @@ on:
 
 jobs:
   test:
-    uses: japa/.github/.github/workflows/test.yml@main
+    uses: poppinss/.github/.github/workflows/test.yml@main
 
   lint:
-    uses: japa/.github/.github/workflows/lint.yml@main
+    uses: poppinss/.github/.github/workflows/lint.yml@main
 
   typecheck:
-    uses: japa/.github/.github/workflows/typecheck.yml@main
+    uses: poppinss/.github/.github/workflows/typecheck.yml@main
