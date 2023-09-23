@@ -1,7 +1,7 @@
 # @poppinss/middleware
 > Implementation of the chain of responsibility design pattern.
 
-[![gh-workflow-image]][gh-workflow-url] [![typescript-image]][typescript-url] [![npm-image]][npm-url] [![license-image]][license-url] [![synk-image]][synk-url]
+[![gh-workflow-image]][gh-workflow-url] [![typescript-image]][typescript-url] [![npm-image]][npm-url] [![license-image]][license-url]
 
 This package is a zero-dependency implementation for the chain of responsibility design pattern, also known as the middleware pipeline.
 
@@ -24,8 +24,10 @@ import Middleware from '@poppinss/middleware'
 import { NextFn } from '@poppinss/middleware/types'
 
 const context = {}
-
-type MiddlewareFn = (ctx: typeof context, next: NextFn)
+type MiddlewareFn = (
+  ctx: typeof context,
+  next: NextFn
+) => void | Promise<void>
 
 const middleware = new Middleware<MiddlewareFn>()
 
@@ -71,7 +73,11 @@ Since, you are in control of executing the underlying middleware function. You c
 ```ts
 const context = {}
 
-type MiddlewareFn = (ctx: typeof context, next: NextFn)
+type MiddlewareFn = (
+  ctx: typeof context,
+  next: NextFn
+) => void | Promise<void>
+
 const middleware = new Middleware<MiddlewareFn>()
 
 middleware.add(function (ctx, next) {
@@ -92,7 +98,11 @@ const context = {
   stack: [],
 }
 
-type MiddlewareFn = (ctx: typeof context, next: NextFn)
+type MiddlewareFn = (
+  ctx: typeof context,
+  next: NextFn
+) => void | Promise<void>
+
 const middleware = new Middleware<MiddlewareFn>()
 
 middleware.add((ctx: typeof context, next: NextFn) => {
@@ -159,8 +169,8 @@ assert.deepEqual(context.stack, [
 ])
 ```
 
-[gh-workflow-image]: https://img.shields.io/github/actions/workflow/status/poppinss/middleware/test.yml?style=for-the-badge
-[gh-workflow-url]: https://github.com/poppinss/middleware/actions/workflows/test.yml "Github action"
+[gh-workflow-image]: https://img.shields.io/github/actions/workflow/status/poppinss/middleware/checks.yml?style=for-the-badge
+[gh-workflow-url]: https://github.com/poppinss/middleware/actions/workflows/checks.yml "Github action"
 
 [typescript-image]: https://img.shields.io/badge/Typescript-294E80.svg?style=for-the-badge&logo=typescript
 [typescript-url]: "typescript"
@@ -168,8 +178,5 @@ assert.deepEqual(context.stack, [
 [npm-image]: https://img.shields.io/npm/v/middleware.svg?style=for-the-badge&logo=npm
 [npm-url]: https://npmjs.org/package/middleware 'npm'
 
-[license-image]: https://img.shields.io/npm/l/middleware?color=blueviolet&style=for-the-badge
+[license-image]: https://img.shields.io/npm/l/@poppinss/middleware?color=blueviolet&style=for-the-badge
 [license-url]: LICENSE.md 'license'
-
-[synk-image]: https://img.shields.io/snyk/vulnerabilities/github/poppinss/middleware?label=Synk%20Vulnerabilities&style=for-the-badge
-[synk-url]: https://snyk.io/test/github/poppinss/middleware?targetFile=package.json 'synk'
