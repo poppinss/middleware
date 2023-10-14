@@ -21,7 +21,7 @@
     "clean": "del-cli build",
     "typecheck": "tsc --noEmit",
     "compile": "npm run lint && npm run clean && tsup-node",
-    "benchmark": "npm run compile && node build/benchmarks/index.js",
+    "benchmark": "node --loader=ts-node/esm benchmarks/index.ts",
     "build": "npm run compile",
     "release": "np",
     "version": "npm run build",
