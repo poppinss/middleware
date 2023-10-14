@@ -5,9 +5,7 @@
   "main": "build/index.js",
   "type": "module",
   "files": [
-    "build/src",
-    "build/index.d.ts",
-    "build/index.js"
+    "build"
   ],
   "engines": {
     "node": ">=18.16.0"
@@ -22,7 +20,7 @@
     "prepublishOnly": "npm run build",
     "clean": "del-cli build",
     "typecheck": "tsc --noEmit",
-    "compile": "npm run lint && npm run clean && tsc",
+    "compile": "npm run lint && npm run clean && tsup-node",
     "benchmark": "npm run compile && node build/benchmarks/index.js",
     "build": "npm run compile",
     "release": "np",
@@ -58,6 +56,7 @@
     "np": "^8.0.4",
     "prettier": "^3.0.3",
     "ts-node": "^10.9.1",
+    "tsup": "^7.2.0",
     "typescript": "^5.2.2"
   },
   "directories": {
@@ -99,5 +98,16 @@
   "eslintConfig": {
     "extends": "@adonisjs/eslint-config/package"
   },
-  "prettier": "@adonisjs/prettier-config"
+  "prettier": "@adonisjs/prettier-config",
+  "tsup": {
+    "entry": [
+      "./index.ts",
+      "./src/types.ts"
+    ],
+    "outDir": "./build",
+    "clean": true,
+    "format": "esm",
+    "dts": true,
+    "target": "esnext"
+  }
 }
