@@ -45,7 +45,7 @@ const seriesStack = [
 ]
 
 suite
-  .add('Co Compose', {
+  .add('@poppinss/middleware', {
     defer: true,
     fn(deferred: any) {
       middleware
