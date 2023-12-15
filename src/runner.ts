@@ -7,7 +7,10 @@
  * file that was distributed with this source code.
  */
 
+import { debuglog } from 'node:util'
 import type { ErrorHandler, Executor, FinalHandler } from './types.js'
+
+const debug = debuglog('poppinss:middleware')
 
 /**
  * Run a function only once. Tightly coupled with the Runner class
@@ -19,6 +22,7 @@ function once(scope: Runner<any>, callback: (scope: Runner<any>) => Promise<void
     }
 
     next.called = true
+    debug('next invoked')
     return callback(scope)
   }
   next.called = false
@@ -79,6 +83,7 @@ export class Runner<MiddlewareFn extends any> {
    */
   #invoke(self: Runner<MiddlewareFn>): Promise<void> | void {
     const middleware = self.#middleware[self.#currentIndex++]
+    debug('running middleware at index', self.#currentIndex)
 
     /**
      * Empty stack
@@ -95,6 +100,7 @@ export class Runner<MiddlewareFn extends any> {
    */
   #invokeWithErrorManagement(self: Runner<MiddlewareFn>): Promise<void> | void {
     const middleware = self.#middleware[self.#currentIndex++]
+    debug('running middleware at index', self.#currentIndex)
 
     /**
      * Empty stack
@@ -132,6 +138,7 @@ export class Runner<MiddlewareFn extends any> {
    */
   async run(cb: Executor<MiddlewareFn>): Promise<void> {
     this.#executor = cb
+    debug('starting middleware chain with %d middleware', this.#middleware.length)
 
     if (this.#errorHandler) {
       return this.#invokeWithErrorManagement(this)

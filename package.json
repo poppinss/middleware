@@ -32,7 +32,7 @@
     "format": "prettier --write .",
     "lint": "eslint . --ext=.ts",
     "sync-labels": "github-label-sync --labels .github/labels.json poppinss/middleware",
-    "quick:test": "node --loader=ts-node/esm bin/test.ts"
+    "quick:test": "cross-env NODE_DEBUG=poppinss:middleware node --loader=ts-node/esm bin/test.ts"
   },
   "keywords": [
     "koa",
@@ -52,6 +52,7 @@
     "@types/node": "^20.10.4",
     "benchmark": "^2.1.4",
     "c8": "^8.0.1",
+    "cross-env": "^7.0.3",
     "del-cli": "^5.1.0",
     "eslint": "^8.55.0",
     "fastseries": "^2.0.0",
