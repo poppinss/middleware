@@ -1,6 +1,6 @@
 {
   "name": "@poppinss/middleware",
-  "version": "3.2.1",
+  "version": "3.2.2",
   "description": "Implementation of the chain of responsibility design pattern",
   "main": "build/index.js",
   "type": "module",
