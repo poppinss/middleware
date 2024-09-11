@@ -6,12 +6,10 @@ permissions:
 jobs:
   labels:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v4
       - uses: EndBug/label-sync@v2
         with:
-          config-file: 'https://raw.githubusercontent.com/thetutlage/static/main/labels.json'
+          config-file: ./github/labels.json
           delete-other-labels: true
-          source-repo: thetutlage/static
           token: ${{ secrets.GITHUB_TOKEN }}
