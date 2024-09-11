@@ -9,10 +9,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-        with:
-          sparse-checkout: .github/labels.yml
       - uses: EndBug/label-sync@v2
         with:
-          config-file: https://raw.githubusercontent.com/thetutlage/static/main/labels.json
+          config-file: 'https://raw.githubusercontent.com/thetutlage/static/main/labels.json'
           delete-other-labels: true
           token: ${{ secrets.GITHUB_TOKEN }}
