@@ -13,4 +13,5 @@ jobs:
         with:
           config-file: 'https://raw.githubusercontent.com/thetutlage/static/main/labels.json'
           delete-other-labels: true
+          source-repo: thetutlage/static
           token: ${{ secrets.GITHUB_TOKEN }}
