@@ -20,26 +20,18 @@
   "scripts": {
     "pretest": "npm run lint",
     "test": "c8 npm run quick:test",
-    "prepublishOnly": "npm run build",
-    "clean": "del-cli build",
-    "typecheck": "tsc --noEmit",
-    "precompile": "npm run lint && npm run clean",
-    "compile": "tsup-node && tsc --emitDeclarationOnly --declaration",
-    "benchmark": "node --no-warnings --import=ts-node-maintained/register/esm benchmarks/index.ts",
-    "build": "npm run compile",
-    "release": "np",
-    "version": "npm run build",
-    "format": "prettier --write .",
     "lint": "eslint",
-    "sync-labels": "github-label-sync --labels .github/labels.json poppinss/middleware",
-    "quick:test": "cross-env NODE_DEBUG=poppinss:middleware node --import=ts-node-maintained/register/esm bin/test.ts"
+    "format": "prettier --write .",
+    "typecheck": "tsc --noEmit",
+    "precompile": "npm run lint",
+    "compile": "tsup-node && tsc --emitDeclarationOnly --declaration",
+    "build": "npm run compile",
+    "version": "npm run build",
+    "prepublishOnly": "npm run build",
+    "release": "release-it",
+    "quick:test": "cross-env NODE_DEBUG=poppinss:middleware node --import=ts-node-maintained/register/esm bin/test.ts",
+    "benchmark": "node --import=ts-node-maintained/register/esm benchmarks/index.ts"
   },
-  "keywords": [
-    "koa",
-    "middleware"
-  ],
-  "author": "virk,poppinss",
-  "license": "MIT",
   "devDependencies": {
     "@adonisjs/eslint-config": "^2.0.0-beta.6",
     "@adonisjs/prettier-config": "^1.4.0",
@@ -52,11 +44,8 @@
     "benchmark": "^2.1.4",
     "c8": "^10.1.2",
     "cross-env": "^7.0.3",
-    "del-cli": "^5.1.0",
     "eslint": "^9.10.0",
     "fastseries": "^2.0.0",
-    "github-label-sync": "^2.3.1",
-    "husky": "^9.1.5",
     "np": "^10.0.7",
     "prettier": "^3.3.3",
     "release-it": "^17.6.0",
@@ -64,9 +53,7 @@
     "tsup": "^8.2.4",
     "typescript": "^5.6.2"
   },
-  "directories": {
-    "test": "tests"
-  },
+  "homepage": "https://github.com/poppinss/middleware#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/poppinss/middleware.git"
@@ -74,7 +61,11 @@
   "bugs": {
     "url": "https://github.com/poppinss/middleware/issues"
   },
-  "homepage": "https://github.com/poppinss/middleware#readme",
+  "keywords": [
+    "middleware"
+  ],
+  "author": "virk,poppinss",
+  "license": "MIT",
   "publishConfig": {
     "provenance": true
   },
