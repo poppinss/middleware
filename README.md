@@ -123,7 +123,7 @@ assert.deepEqual(context.stack, ['fn1', 'final handler'])
 ### Error handler
 By default, the exceptions raised in the middleware pipeline are bubbled upto the `run` method and you can capture them using `try/catch` block. Also, when an exception is raised, the middleware downstream logic will not run, unless middleware internally wraps the `next` method call inside `try/catch` block.
 
-To simply the exception handling process, you can define a custom error handler to catch the exceptions and resume the downstream flow of middleware.
+To simplify the exception handling process, you can define a custom error handler to catch the exceptions and resume the downstream flow of middleware.
 
 ```ts
 const context = {
