@@ -546,4 +546,38 @@ test.group('Runner', () => {
     await assert.rejects(() => runner.run((fn, next) => fn({}, next)), 'Something went wrong')
     assert.deepEqual(chain, ['first', 'second'])
   })
+
+  test('invoke final handler with exception handler', async ({ assert }) => {
+    const chain: string[] = []
+
+    async function first(_: any, next: NextFn) {
+      chain.push('first')
+      const response = await next()
+      chain.push('first after')
+
+      return response
+    }
+
+    async function second(_: any, next: NextFn) {
+      chain.push('second')
+      await sleep(200)
+      const response = await next()
+      await sleep(100)
+      chain.push('second after')
+
+      return response
+    }
+
+    const runner = new Runner([first, second])
+    runner.errorHandler(async (error) => {
+      throw new Error('Handled by error handler', { cause: error })
+    })
+    runner.finalHandler(async () => {
+      chain.push('final handler')
+      throw new Error('Something went wrong')
+    })
+
+    await assert.rejects(() => runner.run((fn, next) => fn({}, next)), 'Handled by error handler')
+    assert.deepEqual(chain, ['first', 'second', 'final handler'])
+  })
 })
