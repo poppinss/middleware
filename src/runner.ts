@@ -8,7 +8,7 @@
  */
 
 import { debuglog } from 'node:util'
-import type { ErrorHandler, Executor, FinalHandler } from './types.js'
+import type { ErrorHandler, Executor, FinalHandler } from './types.ts'
 
 const debug = debuglog('poppinss:middleware')
 

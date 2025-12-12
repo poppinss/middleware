@@ -8,8 +8,8 @@
  */
 
 import { test } from '@japa/runner'
-import type { NextFn } from '../src/types.js'
-import { Middleware } from '../src/middleware.js'
+import type { NextFn } from '../src/types.ts'
+import { Middleware } from '../src/middleware.ts'
 
 test.group('Middleware', () => {
   test('register middleware', ({ assert }) => {

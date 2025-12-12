@@ -3,8 +3,8 @@ import benchmark from 'benchmark'
 // @ts-expect-error
 import Fastseries from 'fastseries'
 
-import type { NextFn } from '../src/types.js'
-import { Middleware } from '../src/middleware.js'
+import type { NextFn } from '../src/types.ts'
+import { Middleware } from '../src/middleware.ts'
 
 const suite = new benchmark.Suite()
 

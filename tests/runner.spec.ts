@@ -9,8 +9,8 @@
 
 import { test } from '@japa/runner'
 
-import { Runner } from '../src/runner.js'
-import type { NextFn } from '../src/types.js'
+import { Runner } from '../src/runner.ts'
+import type { NextFn } from '../src/types.ts'
 
 function sleep(timeout: number) {
   return new Promise<void>((resolve) => {

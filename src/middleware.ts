@@ -7,7 +7,7 @@
  * file that was distributed with this source code.
  */
 
-import { Runner } from './runner.js'
+import { Runner } from './runner.ts'
 
 /**
  * The middleware class implements the chain of responsibility design pattern

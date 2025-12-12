@@ -7,4 +7,4 @@
  * file that was distributed with this source code.
  */
 
-export { Middleware as default } from './src/middleware.js'
+export { Middleware as default } from './src/middleware.ts'
